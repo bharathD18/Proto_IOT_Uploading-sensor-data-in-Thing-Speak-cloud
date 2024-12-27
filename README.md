@@ -1,3 +1,5 @@
+Name: Bharath D
+Reg no: 24900875
 # EX.NO-04 - Uploading sensor data in Thing Speak cloud
 
 # AIM:
