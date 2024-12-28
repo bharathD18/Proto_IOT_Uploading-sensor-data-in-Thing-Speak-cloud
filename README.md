@@ -1,13 +1,14 @@
-Name: Bharath D
-Reg no: 24900875
-# EX.NO-04 - Uploading sensor data in Thing Speak cloud
+# Uploading temperature sensor data in Thing Speak cloud
+
+### NAME: Bharath D
+### REG NO: 24900875
 
 # AIM:
-To monitor the distance of the obstacle using an Ultrasonic sensor and uploading the data in the Thing speak using an ESP32 controller.
+To monitor the temperature sensor data in the Thing speak using an ESP32 controller.
 
 # Apparatus required:
 ESP32 Controller  </br>
-HC-SR04 Ultrasonic sensor module </br>
+Temperature Sensor </br>
 Power supply </br>
 Connecting wires </br>
 Bread board </br>
@@ -28,19 +29,36 @@ Step11. Upload the program in the esp32. </br>
 Step12 Press the boot button in ESP32 and then press and release the reset button after release the boot button </br>
 Step13 Check the output in the cloud </br>
 
+## Thingspeak
+
+Step1 Create a ThingSpeak Account </br>
+Step2 Log in to your ThingSpeak account </br>
+Step3 Create a new channel by navigating to "Channels" and clicking on "New Channel." </br>
+Step4 Configure your channel settings, such as Field labels and Channel name </br>
+Step5 Copy the Channel ID and API key in the thingspeak and update in the program </br>
+Step6 Execute your program to send the sensor value to ThingSpeak </br>
+Step7 Check your ThingSpeak channel to verify that the sensor value has been updated </br>
+
 # THEORY:
+
 ### What is IoT?
+
 Internet of Things (IoT) describes an emerging trend where a large number of embedded devices (things) are connected to the Internet. These connected devices communicate with people and other things and often provide sensor data to cloud storage and cloud computing resources where the data is processed and analyzed to gain important insights. Cheap cloud computing power and increased device connectivity is enabling this trend.IoT solutions are built for many vertical applications such as environmental monitoring and control, health monitoring, vehicle fleet monitoring, industrial monitoring and control, and home automation
+
 ![image](https://user-images.githubusercontent.com/71547910/235334044-c01d4261-d46f-4f62-b07f-72a7b6fce5d5.png)
 
 ### Sending Data to Cloud with ESP32 and ThingSpeak
+
 ThingSpeak is an Internet of Things (IoT) analytics platform that allows users to collect, analyze, and visualize data from sensors or devices connected to the Internet. It is a cloud-based platform that provides APIs for storing and retrieving data, as well as tools for data analysis and visualization.The Internet of Things ( or IoT) is a network of interconnected computing devices such as digital machines, automobiles with built-in sensors, or humans with unique identifiers and the ability to communicate data over a network without human intervention.Hello readers, I hope you all are doing great. In this tutorial, we will learn how to send sensor readings from ESP32 to the ThingSpeak cloud. Here we will use the ESP32’s internal sensor like hall-effect sensor and temperature sensor to observe the data and then will share that data cloud.
 
 ### What is ThingSpeak?
+
 ![image](https://user-images.githubusercontent.com/71547910/235333909-29d2e831-9fe5-4afd-b18d-f1e5d2e32518.png)
+
 It is an open data platform for IoT (Internet of Things). ThingSpeak is a web service operated by MathWorks where we can send sensor readings/data to the cloud. We can also visualize and act on the data (calculate the data) posted by the devices to ThingSpeak. The data can be stored in either private or public channels.ThingSpeak is frequently used for internet of things prototyping and proof of concept systems that require analytics.
 
 ### Features Of ThingSpeak
+
 ThingSpeak service enables users to share analyzed data through public channels: </br>
 ThingSpeak allows professionals to prepare and analyze data for their businesses: </br>
 ThingSpeak updates various ThingSpeak channels using MQTT and REST APIs: </br>
@@ -54,37 +72,78 @@ Automatically act on your data and communicate using third-party services like T
 
 ![image](https://user-images.githubusercontent.com/71547910/235334056-3ba9579f-2f62-43b1-a714-8fde6cf9ef32.png)
 
+
 # PROGRAM:
 ```
-const int trigPin = 9;
-const int echoPin = 10;
+#include "ThingSpeak.h"
+#include <WiFi.h>
+#include "DHT.h"
 
-long duration;
-int distance;
-void setup() {
-pinMode(trigPin, OUTPUT);
-pinMode(echoPin, INPUT);
-Serial.begin(9600);
+
+char ssid[] = "Akshay";
+char pass[] = "Loid D Ackerman :)";
+
+const int out = 23;
+long T;
+float temperature = 0;
+WiFiClient client;
+DHT dht(23, DHT11);
+
+unsigned long myChannelField = 2785416;
+const int TemperatureField = 1;
+const int HumidityField = 2;
+
+const char* myWriteAPIKey = "R7LNAVHQE1W3T0FA";
+
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(out, INPUT);
+  ThingSpeak.begin(client);
+  dht.begin();
+  delay(1000);
 }
 
-void loop() 
+void loop()
 {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  distance= duration*0.034/2;
-  Serial.print("Distance: ");
-  Serial.println(distance);
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      WiFi.begin(ssid,pass);
+      Serial.print(".");
+      delay(5000);
+    }
+    Serial.println("\nConnected.");
+  }
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  Serial.println(" °C");
+
+  Serial.print("Humidity: ");
+  Serial.println(humidity);
+  Serial.println(" g.m-3");
+
+  ThingSpeak.writeField(myChannelField, TemperatureField, temperature, myWriteAPIKey);
+  ThingSpeak.writeField(myChannelField, HumidityField, humidity, myWriteAPIKey);
+  delay(100);
 }
 ```
+
 # CIRCUIT DIAGRAM:
-![image](https://github.com/VarshaAjith1110/Uploading-sensor-data-in-Thing-Speak-cloud/assets/94222288/f82593fe-4135-4d47-a420-319983022fd4)
+
+![Screenshot 2024-12-26 140252](https://github.com/user-attachments/assets/fe573641-489c-4f96-b92b-2f5cf5a14f9a)
 
 # OUTPUT:
-![image](https://github.com/VarshaAjith1110/Uploading-sensor-data-in-Thing-Speak-cloud/assets/94222288/eba0010e-cb59-4442-aabf-690ac8937bdc)
+![Screenshot 2024-12-26 140048](https://github.com/user-attachments/assets/751a5a62-54ef-4d2e-a04c-d889c8f61db7)
+
+![Screenshot 2024-12-26 140101](https://github.com/user-attachments/assets/e928adde-8541-43ee-9be9-1f1d1db5e2f6)
 
 # RESULT:
-Thus the distance of the obstacle was monitored using Ultrasonic sensor and the distance values are uploaded in the Thing speak using ESP32 controller.
+
+Thus the temperature sensor values are updated in the Thing speak using ESP32 controller.
